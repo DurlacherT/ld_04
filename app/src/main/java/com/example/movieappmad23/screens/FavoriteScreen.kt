@@ -10,12 +10,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.example.movieappmad23.models.Movie
+import com.example.movieappmad23.models.MovieCollectionViewModel
 import com.example.movieappmad23.models.getMovies
 import com.example.movieappmad23.widgets.MovieRow
 import com.example.movieappmad23.widgets.SimpleTopAppBar
 
 @Composable
-fun FavoriteScreen(navController: NavController){
+fun FavoriteScreen(navController: NavController, viewModel : MovieCollectionViewModel){
     Scaffold(topBar = {
         SimpleTopAppBar(arrowBackClicked = { navController.popBackStack() }) {
             Text(text = "My Favorite Movies")
@@ -25,9 +26,10 @@ fun FavoriteScreen(navController: NavController){
 
         Column(modifier = Modifier.padding(padding)) {
             LazyColumn {
-                items(movieList){ movie ->
+                items(viewModel.getFavorites()){ movie ->
                     MovieRow(
                         movie = movie,
+                        viewModel = viewModel,
                         onItemClick = { movieId ->
                             navController.navigate(route = Screen.DetailScreen.withId(movieId))
                         }

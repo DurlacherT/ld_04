@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -31,14 +32,15 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.example.movieappmad23.R
 import com.example.movieappmad23.models.Movie
+import com.example.movieappmad23.models.MovieCollectionViewModel
 import com.example.movieappmad23.models.getMovies
 import com.example.movieappmad23.ui.theme.Shapes
 
-@Preview
 @Composable
 fun MovieRow(
     movie: Movie = getMovies()[0],
     modifier: Modifier = Modifier,
+    viewModel: MovieCollectionViewModel,
     onItemClick: (String) -> Unit = {}
 ) {
     Card(modifier = modifier
@@ -57,7 +59,7 @@ fun MovieRow(
                 contentAlignment = Alignment.Center
             ) {
                 MovieImage(imageUrl = movie.images[0])
-                FavoriteIcon()
+                FavoriteIcon(movie.id, viewModel)
             }
 
             MovieDetails(modifier = Modifier.padding(12.dp), movie = movie)
@@ -83,18 +85,38 @@ fun MovieImage(imageUrl: String) {
 }
 
 @Composable
-fun FavoriteIcon() {
+fun FavoriteIcon(movieId: String, viewModel: MovieCollectionViewModel) {
     Box(modifier = Modifier
         .fillMaxSize()
         .padding(10.dp),
         contentAlignment = Alignment.TopEnd
-    ){
-        Icon(
-            tint = MaterialTheme.colors.secondary,
-            imageVector = Icons.Default.FavoriteBorder,
-            contentDescription = "Add to favorites")
+    ) {
+        var isFavorite by remember { mutableStateOf(false) }
+        isFavorite = viewModel.movieList.filter {  it.id == movieId}[0].isFavorite
+        IconToggleButton(
+            checked = isFavorite,
+            onCheckedChange = {
+                isFavorite = !isFavorite
+                viewModel.movieList.filter {  it.id == movieId}[0].isFavorite = !viewModel.movieList.filter {  it.id == movieId}[0].isFavorite
+                println(viewModel.movieList.filter {  it.id == movieId}[0])
+            }
+        ) {
+            Icon(
+                tint = MaterialTheme.colors.secondary,
+                //imageVector = Icons.Default.FavoriteBorder,
+                imageVector = if (isFavorite) {
+                    Icons.Filled.Favorite
+                } else {
+                    Icons.Default.FavoriteBorder
+                },
+                contentDescription = "Add to favorites"
+            )
+        }
     }
 }
+
+
+
 
 
 @Composable
@@ -174,6 +196,37 @@ fun HorizontalScrollableImageView(movie: Movie) {
                     contentScale = ContentScale.Crop
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun MovieRowFilter(
+    movie: Movie = getMovies()[0],
+    modifier: Modifier = Modifier,
+    viewModel: MovieCollectionViewModel,
+    onItemClick: (String) -> Unit = {}
+) {
+    Card(modifier = modifier
+        .clickable {
+            onItemClick(movie.id)
+        }
+        .fillMaxWidth()
+        .padding(5.dp),
+        shape = Shapes.large,
+        elevation = 10.dp
+    ) {
+        Column {
+            Box(modifier = Modifier
+                .height(150.dp)
+                .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                MovieImage(imageUrl = movie.images[0])
+                FavoriteIcon(movie.id, viewModel)
+            }
+
+            MovieDetails(modifier = Modifier.padding(12.dp), movie = movie)
         }
     }
 }
